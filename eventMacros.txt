@@ -1,0 +1,635 @@
+### ---- https://github.com/Teozord/Rolatam-1-99-basic
+## Créditos pelo modelo Base ao Teozord
+## Perfumaria : Zambalas
+## Quest Eden Boya e outras otimizações: Doc
+#-------------------------------------------------------------------------------------
+#---- Configuração Mapas de UP
+#-------------------------------------------------------------------------------------
+sub extrairMapasDeUp {
+    my ($lvl) = @_;
+    my @ranges = (
+        [  1, 20, 'prt_fild08', 'prontera'  ], #Aconselho não mudar, ele deve pegar 120z itens para ter teleport payon e virar gatuno
+        [ 21, 29, 'mjolnir_01', 'geffen'    ],
+        [ 30, 47, 'gef_fild10',  'geffen'   ],
+        [ 48, 64, 'orcsdun01', 	'geffen'   ],
+        [ 65, 75, 'moc_fild17', 'morocc'   ],
+        [ 76, 89, 'gef_fild06', 'geffen'   ],
+        [ 90, 99, 'yuno_fild03', 'yuno'    ],
+        [ 100, 110, 've_fild03, 'rachel'],
+        [ 111, 130, 'ra_san01, 'rachel'],
+        
+    );
+    for my $r (@ranges) {
+        my ($min,$max,$lock,$save) = @$r;
+        return { lockMap=>$lock, saveMap=>$save }
+            if $lvl >= $min && $lvl <= $max;
+    }
+    return {};
+}
+
+##########################################################################
+# CONFIGURAÇÕES GERAIS DO USUÁRIO
+##########################################################################
+sub configurarParametrosUsuario {
+    my %parametrosUsuario = (
+        pesoParaVender        => 70, #em percentual
+        hpParaUsarPocao       => 50, #em percentual
+        pocaoParaUsar         => 'Poção Laranja', #nome da poção a ser usada
+        minPocao              => 30, #mínimo de poções de que vão ser compradas
+        maxPocao              => 120, #máximo de poções de que vão ser compradas
+        zenyMinPot  => 30000, #só realiza compra de pots se tiver mais que esse valor
+    );
+    return \%parametrosUsuario;
+}
+
+#-------------------------------------------------------------------------------------
+# ---- Configuração NPCS Compra/Venda ----
+#-------------------------------------------------------------------------------------
+sub obterNpcDaCidade {
+    my $cidade = $config{saveMap} || $config{lockMap} || "prontera";
+    my %npc = (
+        prontera  => ["prt_in",     126, 76], 
+        payon     => ["payon_in01",  5,  49], 
+        izlude    => ["prt_in",     126, 76], 
+        geffen    => ["geffen_in",  77, 167], 
+        morocc    => ["morocc_in",   141, 6], 
+        yuno      => ["yuno_in01",   25, 34],  
+        aldebaran => ["aldeba_in",   94, 56], 
+        louyang   => ["lou_in01",  196, 104] #falta validar coordenadas
+    );
+    my $dados = $npc{$cidade} // $npc{prontera};
+    return { mapa => $dados->[0], x => $dados->[1], y => $dados->[2] };
+}
+
+
+#-------------------------------------------------------------------------------------
+# ---- Configuraçõs de Builds ---
+#-------------------------------------------------------------------------------------
+sub configurarBuild {
+    my %configsBuild = (
+        skillsAprendiz 	=> 'NV_BASIC 9',
+        skillsClasse1 	=> 'GS_GLITTERING 5, GS_FLING 1, GS_TRIPLEACTION 1, GS_BULLSEYE 1, GS_MADNESSCANCEL 1, GS_ADJUSTMENT 1, GS_INCREASING 1, GS_MAGICALBULLET 1, GS_CRACKER 1, GS_SINGLEACTION 1, GS_SNAKEEYE 1, GS_CHAINACTION 10, GS_TRACKING 10, GS_DISARM 5, GS_PIERCINGSHOT 10, GS_RAPIDSHOWER 5, GS_DESPERADO 10, GS_GATLINGFEVER 10, GS_DUST 10, GS_FULLBUSTER 10, GS_SPREADATTACK 10, GS_GROUNDDRIFT 10',
+        skillsClasse3 	=> 'RL_GLITTERING_GREED 1, RL_PROTECTION_PLATINUM 5, RL_FURY 5, RL_IGNITION 1, RL_B_TRAP 5, RL_P_ALTER 1, RL_RAPIDSHOWER 1, RL_G_THROW 5, RL_L_MISSILE 5, RL_R_TRIP 5, RL_AM_BLAST 5, RL_EXECUTION 5, RL_D_TAIL 5, RL_SOUL_BREAKER 1, RL_S_STORM 5, RL_E_CHAIN 5, RL_C_MARKER 5, RL_FIRE_RAIN 5, RL_EXPURGATE 5, RL_HAMMER_OF_GOD 1',
+        statsPadrao 	=> '40 dex, 20 int, 10 str, 50 dex, 42 int, 19 str, 50 dex, 40 vit, 60 dex, 60 int, 70 dex, 71 int, 60 vit, 89 dex, 72 vit',
+        statsPadraoClasse3 		=> 'dex 120, agi 100, str 35, luk 40, vit 120',
+    );
+    return \%configsBuild;
+}
+
+automacro verificarPocoesAmarela {
+    timeout    100
+   	InInventoryID 502 <= 10
+    Zeny > 15000
+    BaseLevel >= 60
+	BaseLevel <= 80
+    priority   5
+    exclusive 1
+    call verificarPocoesAmarelas
+}
+
+macro verificarPocoesAmarelas {
+    %npc = obterNpcDaCidade()
+
+    [
+    log ============================================
+    log = Configurando compra e uso de Poção Amarela
+    log = Usando NPC em $npc{mapa} $npc{x} $npc{y}
+    log ============================================
+    ]
+
+	do move $npc{mapa} $npc{x} $npc{y}
+	pause 20
+	do talknpc $npc{x} $npc{y} b b9,80 b1,2 n
+	pause 1
+	do conf storageAuto 0
+	do conf sellAuto 1
+	do conf sellAuto_npc $npc{mapa} $npc{x} $npc{y}
+	pause 1
+	do is Asa de Borboleta de Iniciante
+	do ai on
+    log Configuração concluída!
+}
+#-------------------------------------------------------------------------------------
+# ---- Atualiza mapas de up automaticamente ----
+#-------------------------------------------------------------------------------------
+
+automacro atualizarMapasDeUp {
+    BaseLevel != 99
+    timeout    300
+    priority   4
+    exclusive  1
+    call atualizarMapasDeUp
+}
+
+
+macro atualizarMapasDeUp {
+    $lvl = $.lvl
+    %m = extrairMapasDeUp($lvl)
+    if (!&exists($m{lockMap})) {
+        [
+        error ===================================
+        error = ERRO: Mapa indefinido para nível $lvl.
+        error ===================================
+        ]
+        stop
+    }
+        [
+        log ===================================
+        log = Mapas atualizados: $m{lockMap} / $m{saveMap}
+        log ===================================
+        ]
+        do conf attackAuto 2
+        do conf route_randomWalk 1
+		do conf teleportAuto_minAggressivesInLock 4
+        do conf lockMap $m{lockMap}
+        do conf saveMap $m{saveMap}
+}
+
+
+automacro inicializar {
+    run-once 1
+    priority   2
+    exclusive 1
+    BaseLevel > 0
+    call {
+        %configsBuild = configurarBuild()
+        %parametrosClasses = inicializarParametrosClasses()
+        %parametrosUsuario = configurarParametrosUsuario()
+    }
+}
+
+sub inicializarParametrosClasses {
+    return {
+        idC1      => 24,    # Justiceiro (Gunslinger)
+        idBC1     => 4032,  # Baby Justiceiro (Baby Wizard usado para essa classe no LATAM, revise se for correto)
+        idC2      => -1,    # Não há segunda classe "normal"
+        idC2Alt   => -1,
+        idBC2     => -1,
+        idBC2Alt  => -1,
+        idC1T     => -1,    # Não há versão transclasse
+        idC2T     => -1,
+        idC2TAlt  => -1,
+        idC3      => 4215,  # Insurgente (Rebellion)
+        idC3Alt   => -1,
+        idBC3     => -1,
+        idBC3Alt  => -1
+    }
+}
+
+automacro aplicarSkillsClasse1 {
+    JobID 24
+    exclusive 1
+    timeout 600
+    call {
+        %configsBuild = configurarBuild()
+        $skills = $configsBuild{skillsClasse1}
+        log [AutoSkill] Aplicando habilidades de Classe 1: $skills
+        do conf skillsAddAuto 1
+        do conf skillsAddAuto_list $skills
+    }
+}
+
+automacro aplicarStatusClasse1 {
+    BaseLevel >= 1
+    exclusive 1
+    timeout 600
+    run-once 1
+    call {
+        %configsBuild = configurarBuild()
+        $stats = $configsBuild{statsPadrao}
+        log [AutoStats] Aplicando atributos padrão da Classe 1: $stats
+        do conf statsAddAuto 1
+        do conf statsAddAuto_list $stats
+    }
+}
+
+automacro aplicarStatusInsurgente {
+    JobID 4215
+    exclusive 1
+    run-once 1
+    call {
+        %configsBuild = configurarBuild()
+        $stats = $configsBuild{statsPadraoClasse3}
+        log [AutoStats] Aplicando atributos padrão da Classe 3 (Insurgente): $stats
+        do conf statsAddAuto 1
+        do conf statsAddAuto_list $stats
+    }
+}
+
+#-------------------------------------------------------------------------------------
+# ---- RODEX ENVIA 100K DE ZENNY POR VÊS ----
+#-------------------------------------------------------------------------------------
+
+automacro ZenyRodex {
+    Zeny >= 110000
+    exclusive 1
+    macro_delay 2
+    timeout 60
+    call {
+        if (&config(rodexReceiver) == $.name) goto dontSend
+        goto sendIt
+
+        :dontSend
+            log [Rodex] Você é o destinatário configurado. Não vai enviar Zeny.
+            lock ZenyRodex
+            stop
+
+        :sendIt
+            $totalZeny = 100000
+            $receiver = &config(rodexReceiver)
+            $mailTitle = Pega
+            $mailBody = Pega
+
+            log [Rodex] Enviando Zeny para $receiver
+            do rodex open
+            do rodex write $receiver
+            do rodex settarget $receiver
+            do rodex settitle $mailTitle
+            do rodex setbody $mailBody
+            do rodex setzeny $totalZeny
+            do rodex send
+            do rodex close
+    }
+}
+
+
+#-------------------------------------------------------------------------------------
+# ---- RODEX ENVIA CARTAS ----
+#-------------------------------------------------------------------------------------
+
+automacro RodexCards {
+    Zeny >= 2500
+    exclusive 1
+    macro_delay 2
+    timeout 1800
+    call MailCards
+}
+
+macro MailCards {
+    $cards = &InventoryType(card)
+    @cardList = &split(',', $cards)
+    $cardCount = @cardList
+
+    if ($cardList[0] == -1) goto noCards
+    if (&config(rodexReceiver) == $.name) goto dontSend
+    goto sendIt
+
+    :noCards
+        log [Rodex] Nenhuma carta encontrada no inventário.
+        stop
+
+    :dontSend
+        log [Rodex] Você é o destinatário configurado. Não vai enviar cartas.
+        lock RodexCards
+        stop
+
+    :sendIt
+        $receiver = &config(rodexReceiver)
+        $mailTitle = Cartinhaa
+        $mailBody = Cartinha
+
+        log [Rodex] Enviando até 5 cartas para $receiver
+        do rodex open
+        do rodex write $receiver
+        do rodex settarget $receiver
+        do rodex settitle $mailTitle
+        do rodex setbody $mailBody
+        do rodex setzeny 0
+
+        if ($cardCount >= 5) goto max
+        goto min
+
+        :max
+            $i = 0
+            while ($i < 5) {
+                log [Rodex] Adicionando carta com Index: $cardList[$i]
+                do rodex add $cardList[$i] 1
+                $i++
+            }
+            do rodex send
+            do rodex close
+            stop
+
+        :min
+            $i = 0
+            while ($i < $cardCount) {
+                log [Rodex] Adicionando carta com Index: $cardList[$i]
+                do rodex add $cardList[$i] 1
+                $i++
+            }
+            do rodex send
+            do rodex close
+            stop
+}
+
+
+#-----------------------------------------------------------------------------------------------------
+# ---- Define poção de aprendiz do evento como prioridade, antes de começar comprar outras poções ----
+#-----------------------------------------------------------------------------------------------------
+automacro usarPocaoDeAprendiz {
+    ConfigKeyNot useSelf_item_1 [Evento] Poção de Aprendiz
+    InInventory "[Evento] Poção de Aprendiz" > 0
+    exclusive 1
+    call {
+        log parece que tenho [Evento] Poção de Aprendiz, mas ainda não foi configurado pra ser usado
+        log mudando isso
+        $potName = pegarNomePeloIdDoItem(11567) # [Evento] Poção de Aprendiz
+        do conf useSelf_item_1 $potName
+        do conf useSelf_item_1_disabled 0
+        do conf useSelf_item_1_hp < 70%
+        do conf getAuto_0 $potName
+        do conf getAuto_0_minAmount 20
+        do conf getAuto_0_maxAmount 200
+        do conf getAuto_0_passive 0
+        log pronto
+    }
+}
+
+sub pegarNomePeloIdDoItem {
+    my ($id) = @_;
+    if (exists $items_lut{$id}) {
+        return $items_lut{$id};
+    } else {
+        return $id;
+    }
+}
+
+#-------------------------------------------------------------------------------------
+# ---- Vender Loot quando peso acima do definido ----
+#-------------------------------------------------------------------------------------
+
+automacro venderLootPeso {
+    BaseLevel > 0
+    JobLevel >= 1
+    timeout    300
+    exclusive 1
+    priority 3
+    call checkPesoEVender
+}
+
+macro checkPesoEVender {
+    if ($.weightpercent >= $parametrosUsuario{pesoParaVender}) {
+        log ============================================
+        log Peso acima de $parametrosUsuario{pesoParaVender}%, iniciando venda de loot!
+        log ============================================
+
+        call venderLoot
+
+        # Após a venda, esperar até garantir que o peso está baixo
+        while ($.weightpercent >= $parametrosUsuario{pesoParaVender}) {
+            log BUG: Mesmo após macro venda, o peso ainda está alto: $.weightpercent%
+            pause 2
+        }
+
+        log Peso abaixo de $parametrosUsuario{pesoParaVender}%, liberando bot para próxima ação!
+    }
+}
+macro venderLoot {
+    %npc = obterNpcDaCidade()
+
+    [
+    log ============================================
+    log = Peso acima de 70%
+    log = Indo vender loot no NPC em $npc{mapa} $npc{x} $npc{y}
+    log ============================================
+    ]
+	do is Asa de Borboleta de Iniciante
+
+    do move $npc{mapa} $npc{x} $npc{y}
+    do conf sellAuto_npc $npc{mapa} $npc{x} $npc{y}
+    do autosell
+
+    [
+    log ============================================
+    log = Venda concluída!
+    log ============================================
+    ]
+}
+
+automacro confInicial {
+   BaseLevel = 1
+   exclusive 1
+   run-once 1
+   call confInicial
+}
+
+macro confInicial {
+	do conf teleportAuto_item1 Asas de Mosquito
+	pause 1
+	do conf teleportAuto_item2 Asa de Mosca
+	pause 1
+	do conf avoidGM_namePattern GM|ADM|MOD|ADMIN|Game Master|^\d+$
+	pause 1
+	do conf avoidGM_near 5
+	pause 1
+	do conf avoidGM_near_inTown 1
+	pause 1
+	do conf avoidGM_talk 1
+	pause 1
+	do conf avoidGM_reconnect 1800
+	pause 1
+}
+
+#-------------------------------------------------------------------------------------
+# ---- Abertura de caixa de jornada ----
+#-------------------------------------------------------------------------------------
+
+automacro abrirCaixasDeJornada {
+    BaseLevel > 0
+    timeout 900
+    call abrirCaixasDeJornada
+}
+
+macro abrirCaixasDeJornada {
+    @niveis = 1 10 20 30 40 50 70 80 90 100 120 140 160 175
+
+    foreach @niveis as $nivel {
+        $nome = "Caixa de Jornada ($nivel)"
+        $id = &inventory($nome)
+
+        if ($.lvl >= $nivel && $id > 0) {
+            if ($.weightpercent < 50) {
+                log ======================================
+                log Abrindo $nome para nível $nivel
+                log Peso atual: $.weightpercent%
+                log ======================================
+                do is $id
+                pause 1
+            } else {
+                log ======================================
+                log PULANDO $nome (peso alto: $.weightpercent%)
+                log ======================================
+            }
+        }
+    }
+
+#########################AUTO MACROS#########################
+automacro alertaSequestro {
+    InMap sec_pri, prt_in, moc_fild20, moc_para01, moc_para01a, moc_para01b, moc_fild11 ##Adcione aqui mais mapas a seu gosto.
+    overrideAI 1
+    exclusive 1
+    run-once 1
+    call executarFuga
+}
+
+macro executarFuga {
+    log ================================================
+    log = Detecção de mapa perigoso '(risco de sequestro)'
+    log ================================================
+
+    # Interrompe movimentação e ataque automático
+    do conf route_randomWalk 0
+    pause 2
+    do conf attackAuto 0
+    pause 1
+
+    call usarAsaFuga
+}
+
+macro usarAsaFuga {
+    # Tenta usar Asa de Borboleta de Iniciante para escapar
+    do is Asa de Borboleta de Iniciante
+    pause 2
+
+    # Restaura as configurações normais do bot
+    do conf route_randomWalk 1
+    pause 2
+    do conf attackAuto 2
+    pause 2
+
+    log =========================================================================
+    log = Teleporte realizado com sucesso. Retorno à rotina normal.
+    log =========================================================================
+}
+
+#-------------------------------------------------------------------------------------
+# ---- QUEST DO EDEN 26-32 ----
+#-------------------------------------------------------------------------------------
+
+automacro iniciarMissaoBoya {
+    BaseLevel == 30
+    run-once 1
+    call iniciarMissaoBoya
+}
+
+macro iniciarMissaoBoya {
+    # Ir até o Oficial do Éden em Geffen
+    log [Boya] Iniciando missão do Éden.
+    do move geffen 130 66
+    pause 1
+    do talknpc 132 66 c c c c r0 c c
+    pause 2
+
+    # Personagem será teleportado para moc_para01 (grupo Éden)
+    # Falar com Lime Evenor
+    do move moc_para01 27 31
+    pause 1
+    do talknpc 27 35 c r1 c  r0 nonick c c c nonick c c r3
+    pause 2
+
+    # Falar com a Instrutora Boya
+    log [Boya] Falando com a Instrutora Boya.
+    do move moc_para01 23 35
+    pause 1
+    do talknpc 23 35 c r1 c c c c c r0 c r0 c c c c c c
+    pause 1
+    do move moc_para01 29 10
+    pause 2
+    do move pay_arche 41 133
+    pause 1
+    do conf lockMap pay_arche
+    pause 1
+    do talknpc 41 136 c c c c c c c c c c
+    pause 2
+    release cacaSkeleton
+}
+
+automacro cacaSkeleton {
+    QuestHuntOngoing 7139 1076
+    call vaiCaçarSkeleton
+    run-once 1
+}
+
+macro vaiCaçarSkeleton {
+    do move pay_dun00 
+    do conf lockMap pay_dun00
+    do conf attackAuto 2
+    do conf route_randomWalk 1
+    log [Boya] Iniciando caçada de Skeletons.
+    
+}
+
+automacro fimCacaSkeleton {
+    QuestHuntCompleted 7139 1015
+    call falarComCoralPosSkeleton
+}
+
+macro falarComCoralPosSkeleton {
+    log [Skeleton] Caçada completa! Voltando ao Coral.
+    do conf attackAuto 0
+    do conf route_randomWalk 0
+    do move pay_arche 41 135
+    # Conversa com Coral após Skeletons
+    do talknpc 41 136 c c c c c c
+    release cacaPoporing
+}
+
+automacro cacaPoporing {
+    QuestHuntOngoing 7140 1031
+    call vaicacarPoporing
+    run-once 1
+}
+
+macro vaicacarPoporing {
+    log [Poporing] Caçada iniciada. Indo para dungeon.
+    do conf attackAuto 2
+    do conf route_randomWalk 1
+    do move pay_dun00
+}
+
+
+automacro fimCacaPoporing {
+    QuestHuntCompleted 7140 1031
+    call falarComCoralPosPoporing
+    run-once 1
+}
+
+macro falarComCoralPosPoporing {
+    log [Poporing] Caçada completa! Voltando ao Coral.
+    do conf attackAuto 0
+    do conf route_randomWalk 0
+    do move pay_arche 41 135
+    do talknpc 41 135 c c c c c c
+    pause 1
+    call retornarEdenBoya
+}
+
+macro retornarEdenBoya {
+    log [Eden] Usando Emblema para retornar.
+    $id = &inventory("Emblema do Éden")
+    do is $id
+    pause 4
+    do move moc_para01 23 35
+    pause 1
+    do talknpc 23 35 c c c c c c c
+    pause 2
+    do move moc_para01 110 83
+    pause 1
+    do talknpc 110 83 c r0 c c c c c r1 c r0 c c c
+    pause 2
+    do is Arma do Éden I
+    pause 0.5
+    do is Chapéu do Éden I
+    pause 0.5
+    do is Capa do Éden I
+    pause 0.5
+    do is Uniforme do Éden II
+    pause 0.5
+    do is Botas do Éden II
+    pause 1
+}
+
+#-------------------------------------------------------------------------------------
+# ---- QUEST DO EDEN LVL 50 ----
+#-------------------------------------------------------------------------------------
+
