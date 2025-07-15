@@ -1,12 +1,18 @@
-### ---- https://github.com/Teozord/Rolatam-1-99-basic
-## Créditos pelo modelo Base ao Teozord
+### ---- https://github.com/megancheetus/eventMacro/blob/main/eventMacros.txt --- ###
+# Créditos pelo modelo Base ao Teozord
+# Contribuições de Zambala para melhoria do código no uso de poções e demais funcionalidades
+# Plugin eventMacro: https://github.com/Henrybk
+# Projetos meus: Rota de up, abertura de caixa, quest do eden, rodex de cartas, rodex de zenny, teleport
+# Em construção
+
+
 #-------------------------------------------------------------------------------------
 #---- Configuração Mapas de UP
 #-------------------------------------------------------------------------------------
 sub extrairMapasDeUp {
     my ($lvl) = @_;
     my @ranges = (
-        [  1, 20, 'prt_fild08', 'prontera'  ], #Aconselho não mudar, ele deve pegar 120z itens para ter teleport payon e virar gatuno
+        [  1, 20, 'prt_fild08', 'prontera'  ], 
         [ 21, 29, 'mjolnir_01', 'geffen'    ],
         [ 30, 47, 'gef_fild10',  'geffen'   ],
         [ 48, 64, 'orcsdun01', 	'geffen'   ],
@@ -66,8 +72,9 @@ sub obterNpcDaCidade {
 sub configurarBuild {
     my %configsBuild = (
         skillsAprendiz 	=> 'NV_BASIC 9',
-        skillsClasse1 	=> 'GS_GLITTERING 5, GS_FLING 1, GS_TRIPLEACTION 1, GS_BULLSEYE 1, GS_MADNESSCANCEL 1, GS_ADJUSTMENT 1, GS_INCREASING 1, GS_MAGICALBULLET 1, GS_CRACKER 1, GS_SINGLEACTION 1, GS_SNAKEEYE 1, GS_CHAINACTION 10, GS_TRACKING 10, GS_DISARM 5, GS_PIERCINGSHOT 10, GS_RAPIDSHOWER 5, GS_DESPERADO 10, GS_GATLINGFEVER 10, GS_DUST 10, GS_FULLBUSTER 10, GS_SPREADATTACK 10, GS_GROUNDDRIFT 10',
-        skillsClasse3 	=> 'RL_GLITTERING_GREED 1, RL_PROTECTION_PLATINUM 5, RL_FURY 5, RL_IGNITION 1, RL_B_TRAP 5, RL_P_ALTER 1, RL_RAPIDSHOWER 1, RL_G_THROW 5, RL_L_MISSILE 5, RL_R_TRIP 5, RL_AM_BLAST 5, RL_EXECUTION 5, RL_D_TAIL 5, RL_SOUL_BREAKER 1, RL_S_STORM 5, RL_E_CHAIN 5, RL_C_MARKER 5, RL_FIRE_RAIN 5, RL_EXPURGATE 5, RL_HAMMER_OF_GOD 1',
+        skillsClasse1 	=> '',
+        skillsClasse2 	=> '',
+        skillsClasse3 	=> '',
         statsPadrao 	=> '40 dex, 20 int, 10 str, 50 dex, 42 int, 19 str, 50 dex, 40 vit, 60 dex, 60 int, 70 dex, 71 int, 60 vit, 89 dex, 72 vit',
         statsPadraoClasse3 		=> 'dex 120, agi 100, str 35, luk 40, vit 120',
     );
@@ -158,7 +165,7 @@ automacro inicializar {
 
 sub inicializarParametrosClasses {
     return {
-        idC1      => 24,    # Justiceiro (Gunslinger)
+        idC1      => 24,    # Exemplo de árvore do Justiceiro (Gunslinger)
         idBC1     => 4032,  # Baby Justiceiro (Baby Wizard usado para essa classe no LATAM, revise se for correto)
         idC2      => -1,    # Não há segunda classe "normal"
         idC2Alt   => -1,
@@ -201,14 +208,55 @@ automacro aplicarStatusClasse1 {
     }
 }
 
-automacro aplicarStatusInsurgente {
+automacro aplicarSkillsClasse2 {
+    JobID 24
+    exclusive 1
+    timeout 600
+    call {
+        %configsBuild = configurarBuild()
+        $skills = $configsBuild{skillsClasse2}
+        log [AutoSkill] Aplicando habilidades de Classe 1: $skills
+        do conf skillsAddAuto 1
+        do conf skillsAddAuto_list $skills
+    }
+}
+
+automacro aplicarSkillsClasse3 {
+    JobID 24
+    exclusive 1
+    timeout 600
+    call {
+        %configsBuild = configurarBuild()
+        $skills = $configsBuild{skillsClasse3}
+        log [AutoSkill] Aplicando habilidades de Classe 1: $skills
+        do conf skillsAddAuto 1
+        do conf skillsAddAuto_list $skills
+    }
+}
+
+automacro aplicarStatusClasse1 {
+    BaseLevel >= 1
+    exclusive 1
+    timeout 600
+    run-once 1
+    call {
+        %configsBuild = configurarBuild()
+        $stats = $configsBuild{statsPadrao}
+        log [AutoStats] Aplicando atributos padrão da Classe 1: $stats
+        do conf statsAddAuto 1
+        do conf statsAddAuto_list $stats
+    }
+}
+
+
+automacro aplicarStatusclasse3 {
     JobID 4215
     exclusive 1
     run-once 1
     call {
         %configsBuild = configurarBuild()
         $stats = $configsBuild{statsPadraoClasse3}
-        log [AutoStats] Aplicando atributos padrão da Classe 3 (Insurgente): $stats
+        log [AutoStats] Aplicando atributos padrão da Classe 3: $stats
         do conf statsAddAuto 1
         do conf statsAddAuto_list $stats
     }
