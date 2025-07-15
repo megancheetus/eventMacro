@@ -34,4 +34,4 @@ Este arquivo `eventMacros.txt` contém um conjunto de macros para automação de
 5.  Configure um `rodexReceiver` no seu `config.txt` para que o envio de zeny e cartas funcione.
 
 ## Forks:
-[cite_start]O modelo base das macros foi desenvolvido por **Teozord**[cite: 1].
+[cite_start]O modelo base da macro dos mapas foi desenvolvido por **Teozord**[cite: 1].
