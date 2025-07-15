@@ -1,7 +1,5 @@
 ### ---- https://github.com/Teozord/Rolatam-1-99-basic
 ## Créditos pelo modelo Base ao Teozord
-## Perfumaria : Zambalas
-## Quest Eden Boya e outras otimizações: Doc
 #-------------------------------------------------------------------------------------
 #---- Configuração Mapas de UP
 #-------------------------------------------------------------------------------------
@@ -462,6 +460,7 @@ macro abrirCaixasDeJornada {
             }
         }
     }
+}
 
 #########################AUTO MACROS#########################
 automacro alertaSequestro {
