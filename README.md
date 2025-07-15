@@ -6,24 +6,24 @@ Este arquivo `eventMacros.txt` contém um conjunto de macros para automação de
 
 **Rota de Up Automática:** O bot atualiza o mapa de caça (`lockMap`) automaticamente com base no nível do personagem.
 * **Build Automatizada:**
-    * [cite_start]Distribui pontos de status (stats) conforme o personagem evolui[cite: 22, 23].
-    * [cite_start]Aprende as habilidades (skills) de Justiceiro e Insurgente de forma automática[cite: 13].
+    * Distribui pontos de status (stats) conforme o personagem evolui.
+    * Aprende as habilidades (skills) de Justiceiro e Insurgente de forma automática.
 * **Gerenciamento de Suprimentos:**
-    * [cite_start]Define o uso e a compra de poções, com valores mínimos de zeny para realizar a compra[cite: 7, 8].
-    * [cite_start]Prioriza o uso de poções de evento, como a "[Evento] Poção de Aprendiz", caso existam no inventário[cite: 35, 36].
+    * Define o uso e a compra de poções, com valores mínimos de zeny para realizar a compra.
+    * Prioriza o uso de poções de evento, como a "[Evento] Poção de Aprendiz", caso existam no inventário.
 * **Logística Automatizada:**
-    * [cite_start]Retorna à cidade salva para vender itens quando o peso atinge o limite configurado (padrão 70%)[cite: 40].
-    * [cite_start]Encontra automaticamente o NPC de utilidades na cidade para compra e venda[cite: 9, 10, 11].
+    * Retorna à cidade salva para vender itens quando o peso atinge o limite configurado (padrão 70%).
+    * Encontra automaticamente o NPC de utilidades na cidade para compra e venda.
 * **Envio por RODEX:**
-    * [cite_start]Envia automaticamente 100.000 zeny para um personagem principal quando o saldo ultrapassa 110.000[cite: 24, 25, 26, 27].
-    * [cite_start]Envia automaticamente as cartas obtidas para um personagem principal[cite: 28, 30, 31].
+    * Envia automaticamente 100.000 zeny para um personagem principal quando o saldo ultrapassa 110.000.
+    * Envia automaticamente as cartas obtidas para um personagem principal.
 * **Automação de Itens:**
-    * [cite_start]Abre as "Caixas de Jornada" nos níveis correspondentes (1, 10, 20, etc.) [cite: 43, 44][cite_start], pulando a abertura se o peso estiver alto[cite: 45].
+    * Abre as "Caixas de Jornada" nos níveis correspondentes (1, 10, 20, etc.) [cite: 43, 44][cite_start], pulando a abertura se o peso estiver alto.
 * **Automação de Quests:**
-    * [cite_start]Executa a sequência de missões do Grupo do Éden para o nível 26-40 (Instrutora Boya), incluindo as caçadas de Skeletons e Poporings[cite: 49, 50, 52, 54, 55].
-    * [cite_start]Coleta as recompensas, incluindo os equipamentos do Éden[cite: 57].
+    * Executa a sequência de missões do Grupo do Éden para o nível 26-40 (Instrutora Boya), incluindo as caçadas de Skeletons e Poporings.
+    * Coleta as recompensas, incluindo os equipamentos do Éden.
 * **Segurança:**
-    * [cite_start]Possui uma macro de fuga que detecta mapas perigosos (risco de sequestro) e utiliza um item de teleporte para sair do local[cite: 46, 47, 48].
+    * Possui uma macro de fuga que detecta mapas perigosos (risco de sequestro) e utiliza um item de teleporte para sair do local.
 
 ## Instalação
 
